@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package users;
+
+option go_package = "github.com/dstopka/notebook-app/backedn/users";
+
+service UsersService {}

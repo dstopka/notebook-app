@@ -1,0 +1,1 @@
+protoc --go_out=backend/common/genproto/users --go_opt=paths=source_relative --go-grpc_out=backend/common/genproto/users --go-grpc_opt=paths=source_relative --proto_path=api/protobuf api/protobuf/users.proto
