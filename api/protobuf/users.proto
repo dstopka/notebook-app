@@ -4,4 +4,30 @@ package users;
 
 option go_package = "github.com/dstopka/notebook-app/backedn/users";
 
-service UsersService {}
+import "google/protobuf/empty.proto";
+
+service UsersService {
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+    rpc SetAvatar(SetAvatarRequest) returns (google.protobuf.Empty) {}
+    rpc SetLastIP(SetLastIPRequest) returns (google.protobuf.Empty) {}
+}
+
+message GetUserRequest {
+    string user_id = 1;
+}
+
+message GetUserResponse {
+    string display_name = 1;
+    string role = 2;
+    string avatar_url = 3;
+}
+
+message SetAvatarRequest {
+    string user_id = 1;
+    string avatar_url = 2;
+}
+
+message SetLastIPRequest {
+    string user_id = 1;
+    string ip = 2;
+}
