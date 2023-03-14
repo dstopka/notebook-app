@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/dstopka/notebook-app/backend/users/internal/adapters"
+	"github.com/dstopka/notebook-app/backend/users/internal/app"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -49,15 +50,15 @@ func TestUserRepositoryIntegration(t *testing.T) {
 
 type Repository struct {
 	Name string
-	Impl adapters.UserRepository
+	Impl app.UserRepository
 }
 
-func testGetUser(t *testing.T, repo adapters.UserRepository) {
+func testGetUser(t *testing.T, repo app.UserRepository) {
 	t.Helper()
 	ctx := context.Background()
 
 	testCases := map[string]struct {
-		expectedUser *adapters.User
+		expectedUser *app.User
 		insertUser   bool
 	}{
 		"existing_user": {
@@ -65,7 +66,7 @@ func testGetUser(t *testing.T, repo adapters.UserRepository) {
 			insertUser: true,
 		},
 		"not_existing_user": {
-			expectedUser: &adapters.User{},
+			expectedUser: &app.User{},
 		},
 	}
 
@@ -81,7 +82,7 @@ func testGetUser(t *testing.T, repo adapters.UserRepository) {
 			}
 
 			if tc.insertUser {
-				err := repo.UpdateUser(ctx, userID, func(_ *adapters.User) (*adapters.User, error) {
+				err := repo.UpdateUser(ctx, userID, func(_ *app.User) (*app.User, error) {
 					return tc.expectedUser, nil
 				})
 				require.NoError(t, err)
@@ -95,20 +96,20 @@ func testGetUser(t *testing.T, repo adapters.UserRepository) {
 	}
 }
 
-func testUpdateUser(t *testing.T, repo adapters.UserRepository) {
+func testUpdateUser(t *testing.T, repo app.UserRepository) {
 	t.Helper()
 	ctx := context.Background()
 
 	testCases := map[string]struct {
-		getUser func() *adapters.User
+		getUser func() *app.User
 	}{
 		"with_name_and_role": {
-			getUser: func() *adapters.User {
+			getUser: func() *app.User {
 				return newSimpleUser()
 			},
 		},
 		"with_avatarURL": {
-			getUser: func() *adapters.User {
+			getUser: func() *app.User {
 				user := newSimpleUser()
 				user.AvatarURL = "images.com/test-image"
 
@@ -116,7 +117,7 @@ func testUpdateUser(t *testing.T, repo adapters.UserRepository) {
 			},
 		},
 		"with_lastIP": {
-			getUser: func() *adapters.User {
+			getUser: func() *app.User {
 				user := newSimpleUser()
 				user.LastIP = "127.0.0.1"
 				
@@ -133,7 +134,7 @@ func testUpdateUser(t *testing.T, repo adapters.UserRepository) {
 
 			user := tc.getUser()
 
-			err := repo.UpdateUser(ctx, user.UUID, func(_ *adapters.User) (*adapters.User, error) {
+			err := repo.UpdateUser(ctx, user.UUID, func(_ *app.User) (*app.User, error) {
 				return user, nil
 			})
 			require.NoError(t, err)
@@ -143,20 +144,20 @@ func testUpdateUser(t *testing.T, repo adapters.UserRepository) {
 	}
 }
 
-func testUpdateUser_existing(t *testing.T, repo adapters.UserRepository) {
+func testUpdateUser_existing(t *testing.T, repo app.UserRepository) {
 	t.Helper()
 	ctx := context.Background()
 
 	user := newSimpleUser()
 
-	err := repo.UpdateUser(ctx, user.UUID, func(_ *adapters.User) (*adapters.User, error) {
+	err := repo.UpdateUser(ctx, user.UUID, func(_ *app.User) (*app.User, error) {
 		return user, nil
 	})
 	require.NoError(t, err)
 	assertUserInRepository(ctx, t, repo, user)
 
-	var expectedUser *adapters.User
-	err = repo.UpdateUser(ctx, user.UUID, func(u *adapters.User) (*adapters.User, error) {
+	var expectedUser *app.User
+	err = repo.UpdateUser(ctx, user.UUID, func(u *app.User) (*app.User, error) {
 		u.AvatarURL = "images.com/test-image"
 		u.LastIP = "127.0.0.1"
 
@@ -168,15 +169,15 @@ func testUpdateUser_existing(t *testing.T, repo adapters.UserRepository) {
 	assertUserInRepository(ctx, t, repo, expectedUser)
 }
 
-func newSimpleUser() *adapters.User {
-	return &adapters.User{
+func newSimpleUser() *app.User {
+	return &app.User{
 		UUID:   uuid.NewString(),
 		Name:   "John Doe",
 		Role:   "user",
 	}
 }
 
-func assertUserInRepository(ctx context.Context, t *testing.T, repo adapters.UserRepository, user *adapters.User) {
+func assertUserInRepository(ctx context.Context, t *testing.T, repo app.UserRepository, user *app.User) {
 	require.NotNil(t, user)
 
 	userFromRepo, err := repo.GetUser(ctx, user.UUID)

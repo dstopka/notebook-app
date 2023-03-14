@@ -4,27 +4,59 @@ import (
 	"context"
 
 	"github.com/dstopka/notebook-app/backend/common/genproto/users"
+	"github.com/dstopka/notebook-app/backend/users/internal/app"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// GrpcServer is the implementation of UserServiceServer.
 type GrpcServer struct {
+	app *app.Application
 	users.UnimplementedUsersServiceServer
 }
 
-func NewGrpcServer() *GrpcServer {
-	return &GrpcServer{}
+// NewGrrpcServer returns a new GrpcServer.
+func NewGrpcServer(app *app.Application) *GrpcServer {
+	if app == nil {
+		panic("app is nil")
+	}
+
+	return &GrpcServer{
+		app: app,
+	}
 }
 
-func (g *GrpcServer) GetUser(_ context.Context, _ *users.GetUserRequest) (*users.GetUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "GetUser not implemented")
+// GetUser implements UserServiceServer's GetUser method.
+func (g *GrpcServer) GetUser(ctx context.Context, req *users.GetUserRequest) (*users.GetUserResponse, error) {
+	user, err := g.app.HandleGetUser(ctx, req.UserId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := &users.GetUserResponse{
+		DisplayName: user.Name,
+		AvatarUrl:   user.AvatarURL,
+		Role:        user.Role,
+	}
+
+	return resp, nil
 }
 
-func (g *GrpcServer) SetAvatar(_ context.Context, _ *users.SetAvatarRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "SetAvatar not implemented")
+// SetAvatar implements UserServiceServer's SetAvatar method.
+func (g *GrpcServer) SetAvatar(ctx context.Context, req *users.SetAvatarRequest) (*emptypb.Empty, error) {
+	if err := g.app.HandleSetAvatar(ctx, req.UserId, req.AvatarUrl); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
-func (g *GrpcServer) SetLastIP(_ context.Context, _ *users.SetLastIPRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "SetLastIP not implemented")
+// SetLastIP implements UserServiceServer's SetLastIP method.
+func (g *GrpcServer) SetLastIP(ctx context.Context, req *users.SetLastIPRequest) (*emptypb.Empty, error) {
+	if err := g.app.HandleSetLastIP(ctx, req.UserId, req.Ip); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &emptypb.Empty{}, nil
 }
