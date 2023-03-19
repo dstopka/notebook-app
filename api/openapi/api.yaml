@@ -1,0 +1,661 @@
+openapi: "3.0.0"
+info:
+  version: 0.0.1
+  title: Notebook App
+  description: TODO
+  contact:
+    name: Darek Stopka
+servers:
+  - url: https://{hostname}}/api
+    variables:
+      hostname:
+        default: localhost
+security:
+  - bearerAuth: []
+paths:
+  /users/me:
+    get:
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: user successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateCurrentUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchUser"
+      responses:
+        "204":
+          description: user successfully updated
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /notebooks:
+    get:
+      operationId: getNotebooks
+      responses:
+        "200":
+          description: notebooks sucessfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notebooks"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      operationId: createNotebook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostNotebook"
+      responses:
+        "201":
+          description: notebook sucessfully created
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /notebooks/query:
+    post:
+      operationId: queryNotebooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotebooksQuery"
+      responses:
+        "200":
+          description: notebooks successfully queried
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notebooks"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /notebooks/{notebookUUID}:
+    get:
+      operationId: getNotebook
+      parameters:
+        - $ref: "#/components/parameters/NotebookID"
+      responses:
+        "200":
+          description: notebook suffessfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notebook"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      operationId: UpdateNotebook
+      parameters:
+        - $ref: "#/components/parameters/NotebookID"
+      requestBody:
+        description: notebook successfully updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchNotebook"
+      responses:
+        "204":
+          description: TODO
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      operationId: deleteNotebook
+      parameters:
+        - $ref: "#/components/parameters/NotebookID"
+      responses:
+        "204":
+          description: notebook successfully deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /notes:
+    get:
+      operationId: getNotes
+      responses:
+        "200":
+          description: notes successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notes"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      operationId: createNote
+      requestBody:
+        description: note successfully created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostNote"
+      responses:
+        "201":
+          description: TODO
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /notes/query:
+    post:
+      operationId: queryNotes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotesQuery"
+      responses:
+        "200":
+          description: notes successfully queried
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notes"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /notes/{noteUUID}:
+    get:
+      operationId: getNote
+      parameters:
+        - $ref: "#/components/parameters/NoteID"
+      responses:
+        "200":
+          description: note successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      operationId: updateNote
+      parameters:
+        - $ref: "#/components/parameters/NoteID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchNote"
+      responses:
+        "204":
+          description: note successfully updated
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: deleteNote
+      parameters:
+        - $ref: "#/components/parameters/NoteID"
+      responses:
+        "204":
+          description: note successfully deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /images/presigned-upload-url:
+    post:
+      operationId: getPresignedUploadURL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetPresignedUploadURL"
+      responses:
+        "200":
+          description: presign upload url successfully generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresignedUploadURL"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UserBase:
+      type: object
+      properties:
+        avatarURL:
+          type: string
+          format: uri
+
+    User:
+      description: represents a single user
+      allOf:
+        - $ref: "#/components/schemas/UserBase"
+        - type: object
+          properties:
+            name:
+              type: string
+            role:
+              type: string
+          required:
+            - name
+            - role
+            - avatarURL
+
+    PatchUser:
+      $ref: "#/components/schemas/UserBase"
+
+    NotebookBase:
+      type: object
+      properties:
+        title:
+          type: string
+        icon:
+          $ref: "#/components/schemas/Icon"
+        description:
+          type: string
+
+    Notebook:
+      description: a represents a single notebook
+      allOf:
+        - $ref: "#/components/schemas/NotebookBase"
+        - type: object
+          properties:
+            uuid:
+              type: string
+              format: uuid
+            createdTime:
+              type: string
+              format: date-time
+            lastEditedTime:
+              type: string
+              format: date-time
+            notesNumber:
+              type: integer
+          required:
+            - uuid
+            - createdTime
+            - lastEditedTime
+            - notesNumber
+            - title
+            - description
+
+    Notebooks:
+      description: represents a list of notebooks
+      type: object
+      properties:
+        notebooks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notebook"
+      required: [notebooks]
+
+    PostNotebook:
+      $ref: "#/components/schemas/NotebookBase"
+
+    PatchNotebook:
+      $ref: "#/components/schemas/NotebookBase"
+
+    NotebooksQuery:
+      $ref: "#/components/schemas/Query"
+
+    NoteBase:
+      type: object
+      properties:
+        icon:
+          $ref: "#/components/schemas/Icon"
+        title:
+          type: string
+        content:
+          type: string
+        externalURL:
+          type: string
+          format: uri
+        date:
+          type: string
+          format: date-time
+        notebook:
+          type: object
+          properties:
+            uuid:
+              type: string
+              format: uuid
+
+    Note:
+      description: represents a single note
+      allOf:
+        - $ref: "#/components/schemas/NoteBase"
+        - type: object
+          properties:
+            uuid:
+              type: string
+              format: uuid
+            createdTime:
+              type: string
+              format: date-time
+            lastEditedTime:
+              type: string
+              format: date-time
+            notebook:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
+                icon:
+                  $ref: "#/components/schemas/Icon"
+              required:
+                - uuid
+                - title
+          required:
+            - uuid
+            - createdTime
+            - lastEditedTime
+            - notebook
+            - title
+            - content
+            - externalURL
+
+    Notes:
+      description: represents a list of notes
+      type: object
+      properties:
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Note"
+      required: [notes]
+
+    PostNote:
+      $ref: "#/components/schemas/NoteBase"
+
+    PatchNote:
+      $ref: "#/components/schemas/NoteBase"
+
+    NotesQuery:
+      $ref: "#/components/schemas/Query"
+
+    Icon:
+      description: represents a single icon model
+      $ref: "#/components/schemas/Emoji"
+
+    Emoji:
+      type: object
+      properties:
+        emoji:
+          type: string
+      required: [emoji]
+
+    Query:
+      description: represents object containing filters and sorts
+      type: object
+      properties:
+        filter:
+          $ref: "#/components/schemas/Filter"
+        sorts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sort"
+      required: [sorts]
+
+    Filter:
+      description: represents a single filter or a compound filter
+      oneOf:
+        - $ref: "#/components/schemas/FilterItem"
+        - $ref: "#/components/schemas/CompoundFilter"
+      discriminator:
+        propertyName: type
+        mapping:
+          compoundFilter: "#/components/schemas/CompoundFilter"
+          simpleFilter: "#/components/schemas/FilterItem"
+
+    CompoundFilter:
+      type: object
+      properties:
+        type:
+          type: string
+        operator:
+          type: string
+          enum:
+            - and
+            - or
+        filters:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/FilterItem"
+      required:
+        - type
+        - operator
+        - filters
+
+    FilterItem:
+      allOf:
+        - properties:
+            type:
+              type: string
+            property:
+              type: string
+          required:
+            - type
+            - property
+        - oneOf:
+            - $ref: "#/components/schemas/TextFilter"
+
+    TextFilter:
+      type: object
+      properties:
+        text:
+          oneOf:
+            - $ref: "#/components/schemas/IsEmpty"
+            - $ref: "#/components/schemas/IsNotEmpty"
+            - $ref: "#/components/schemas/Contains"
+          discriminator:
+            propertyName: operation
+            mapping:
+              isEmpty: "#/components/schemas/IsEmpty"
+              isNotEmpty: "#/components/schemas/IsNotEmpty"
+              contains: "#/components/schemas/Contains"
+              equals: "#/components/schemas/Equals"
+
+    IsEmpty:
+      type: object
+      properties:
+        operation:
+          type: string
+        isEmpty:
+          type: boolean
+      required: 
+        - isEmpty
+        - operation
+
+    IsNotEmpty:
+      type: object
+      properties:
+        operation:
+          type: string
+        isNotEmpty:
+          type: boolean
+      required: 
+        - isNotEmpty
+        - operation
+
+    Contains:
+      type: object
+      properties:
+        operation:
+          type: string
+        contains:
+          type: string
+      required: 
+        - contains
+        - operation
+
+    Equals:
+      type: object
+      properties:
+        operation:
+          type: string
+        equals:
+          type: string
+      required: 
+        - equals
+        - operation
+
+    Sort:
+      type: object
+      properties:
+        property:
+          type: string
+        direction:
+          type: string
+          enum:
+            - ascending
+            - descending
+      required:
+        - property
+        - direction
+
+    GetPresignedUploadURL:
+      type: object
+      properties:
+        contentLength:
+          type: integer
+        contentType:
+          type: string
+        name:
+          type: string
+      required:
+        - contentLength
+        - contentType
+        - name
+
+    PresignedUploadURL:
+      type: object
+      properties:
+        URL:
+          type: string
+        signedGetURL:
+          type: string
+        signedPutURL:
+          type: string
+        putHeaders:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+            required:
+              - name
+              - value
+      required:
+        - URL
+        - signedGetURL
+        - signedPutURL
+
+    Error:
+      description: represents an error returned by the service
+      type: object
+      properties:
+        slug:
+          description: error identifier
+          type: string
+        message:
+          description: error message
+          type: string
+        status:
+          description: HTTP status code
+          type: integer
+      required:
+        - slug
+        - message
+        - status
+
+  parameters:
+    NotebookID:
+      name: notebookUUID
+      in: path
+      required: true
+      description: represents UUID of the choosen notebook object
+      schema:
+        type: string
+        format: uuid
+
+    NoteID:
+      name: noteUUID
+      in: path
+      required: true
+      description: represents UUID of the choosen note object
+      schema:
+        type: string
+        format: uuid
