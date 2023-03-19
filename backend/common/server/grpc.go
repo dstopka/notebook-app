@@ -7,13 +7,19 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/dstopka/notebook-app/backend/common/genproto/users"
 	"google.golang.org/grpc"
 )
 
-func RunGRPCServer(addr string, srv users.UsersServiceServer) error {
+type grpcServerConfig interface {
+	Addr() string
+}
+
+// RegisterServerFn defines function used to register grpc server.
+type RegisterServerFn func(*grpc.Server)
+
+func RunGRPCServer(c grpcServerConfig, registerServer RegisterServerFn) error {
 	server := grpc.NewServer()
-	users.RegisterUsersServiceServer(server, srv)
+	registerServer(server)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
@@ -23,7 +29,7 @@ func RunGRPCServer(addr string, srv users.UsersServiceServer) error {
 		server.GracefulStop()
 	}()
 
-	listener, err := net.Listen("tcp", addr)
+	listener, err := net.Listen("tcp", c.Addr())
 	if err != nil {
 		return err
 	}

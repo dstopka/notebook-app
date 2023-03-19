@@ -4,19 +4,26 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/dstopka/notebook-app/backend/common/genproto/users"
+	"github.com/dstopka/notebook-app/backend/common/server"
+	"github.com/dstopka/notebook-app/backend/users/internal/config"
 	"github.com/dstopka/notebook-app/backend/users/internal/infrastructure"
 	"github.com/dstopka/notebook-app/backend/users/internal/service"
-	"github.com/dstopka/notebook-app/backend/users/pkg/server"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	port := "8080"
 	addr := fmt.Sprintf(":%s", port)
+	config := config.Config{Address: addr}
 
 	app := service.NewApplication()
-	srv := infrastructure.NewGrpcServer(app)
 
-	if err := server.RunGRPCServer(addr, srv); err != nil {
+	err := server.RunGRPCServer(config, func(s *grpc.Server) {
+		srv := infrastructure.NewGrpcServer(app)
+		users.RegisterUsersServiceServer(s, srv)
+	})
+	if err != nil {
 		log.Fatalln(err)
 	}
 }

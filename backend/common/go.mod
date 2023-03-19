@@ -3,12 +3,15 @@ module github.com/dstopka/notebook-app/backend/common
 go 1.20
 
 require (
+	github.com/deepmap/oapi-codegen v1.12.4
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.29.0
 )
 
 require (
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
