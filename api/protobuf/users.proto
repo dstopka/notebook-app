@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package users;
 
-option go_package = "github.com/dstopka/notebook-app/backedn/users";
+option go_package = "github.com/dstopka/notebook-app/backend/users";
 
 import "google/protobuf/empty.proto";
 

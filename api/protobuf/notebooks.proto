@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package notebooks;
+
+option go_package = "github.com/dstopka/notebook-app/backend/notebooks";
+
+service NotebooksService {}
