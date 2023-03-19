@@ -1,0 +1,4 @@
+package: infrastructure
+generate:
+  chi-server: true
+output: openapi_api.gen.go
