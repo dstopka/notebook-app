@@ -5,7 +5,7 @@ import "context"
 // UpdateUserFn defines function type used to update the user.
 type UpdateUserFn func(*User) (*User, error)
 
-// UserRepository is the contract for user related database operations.
+// UserRepository defines the contract for user related database operations.
 type UserRepository interface {
 	// GetUser finds user by ID.
 	GetUser(ctx context.Context, id string) (*User, error)

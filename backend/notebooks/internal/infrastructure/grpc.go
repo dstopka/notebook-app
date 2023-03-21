@@ -5,10 +5,12 @@ import (
 	"github.com/dstopka/notebook-app/backend/notebooks/internal/app"
 )
 
+var _ notebooks.UnsafeNotebooksServiceServer = (*GrpcServer)(nil)
+
 // GrpcServer defines the implementation of NotebooksServiceServer.
 type GrpcServer struct {
 	app *app.Application
-	notebooks.UnimplementedNotebooksServiceServer
+	notebooks.UnsafeNotebooksServiceServer
 }
 
 // NewGrpcServer creates a new GrpcServer using provided app.

@@ -10,10 +10,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// GrpcServer is the implementation of UserServiceServer.
+var _ users.UsersServiceServer = (*GrpcServer)(nil)
+
+// GrpcServer defines the implementation of UserServiceServer.
 type GrpcServer struct {
 	app *app.Application
-	users.UnimplementedUsersServiceServer
+	users.UnsafeUsersServiceServer
 }
 
 // NewGrrpcServer returns a new GrpcServer.

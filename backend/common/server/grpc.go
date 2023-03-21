@@ -10,14 +10,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-type grpcServerConfig interface {
+// GRPCServerConfig defines all methods needed to configure a grpc service server.
+type GRPCServerConfig interface {
 	Addr() string
 }
 
 // RegisterServerFn defines function used to register grpc server.
 type RegisterServerFn func(*grpc.Server)
 
-func RunGRPCServer(c grpcServerConfig, registerServer RegisterServerFn) error {
+func RunGRPCServer(c GRPCServerConfig, registerServer RegisterServerFn) error {
 	server := grpc.NewServer()
 	registerServer(server)
 

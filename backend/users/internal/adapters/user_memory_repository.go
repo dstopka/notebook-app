@@ -7,6 +7,8 @@ import (
 	"github.com/dstopka/notebook-app/backend/users/internal/app"
 )
 
+var _ app.UserRepository = (*MemoryUserRepository)(nil)
+
 // MemoryUserRepository is an in-memory implementation of UserRepository.
 type MemoryUserRepository struct {
 	users map[string]app.User
