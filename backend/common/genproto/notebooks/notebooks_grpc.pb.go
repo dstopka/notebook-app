@@ -7,7 +7,11 @@
 package notebooks
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -15,12 +19,23 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-const ()
+const (
+	NotebooksService_CreateNotebook_FullMethodName = "/notebooks.v1.NotebooksService/CreateNotebook"
+	NotebooksService_ListNotebooks_FullMethodName  = "/notebooks.v1.NotebooksService/ListNotebooks"
+	NotebooksService_GetNotebook_FullMethodName    = "/notebooks.v1.NotebooksService/GetNotebook"
+	NotebooksService_UpdateNotebook_FullMethodName = "/notebooks.v1.NotebooksService/UpdateNotebook"
+	NotebooksService_DeleteNotebook_FullMethodName = "/notebooks.v1.NotebooksService/DeleteNotebook"
+)
 
 // NotebooksServiceClient is the client API for NotebooksService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NotebooksServiceClient interface {
+	CreateNotebook(ctx context.Context, in *CreateNotebookRequest, opts ...grpc.CallOption) (*Notebook, error)
+	ListNotebooks(ctx context.Context, in *ListNotebooksRequest, opts ...grpc.CallOption) (*Notebooks, error)
+	GetNotebook(ctx context.Context, in *GetNotebookRequest, opts ...grpc.CallOption) (*Notebook, error)
+	UpdateNotebook(ctx context.Context, in *UpdateNotebookRequest, opts ...grpc.CallOption) (*Notebook, error)
+	DeleteNotebook(ctx context.Context, in *DeleteNotebookRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type notebooksServiceClient struct {
@@ -31,10 +46,60 @@ func NewNotebooksServiceClient(cc grpc.ClientConnInterface) NotebooksServiceClie
 	return &notebooksServiceClient{cc}
 }
 
+func (c *notebooksServiceClient) CreateNotebook(ctx context.Context, in *CreateNotebookRequest, opts ...grpc.CallOption) (*Notebook, error) {
+	out := new(Notebook)
+	err := c.cc.Invoke(ctx, NotebooksService_CreateNotebook_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notebooksServiceClient) ListNotebooks(ctx context.Context, in *ListNotebooksRequest, opts ...grpc.CallOption) (*Notebooks, error) {
+	out := new(Notebooks)
+	err := c.cc.Invoke(ctx, NotebooksService_ListNotebooks_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notebooksServiceClient) GetNotebook(ctx context.Context, in *GetNotebookRequest, opts ...grpc.CallOption) (*Notebook, error) {
+	out := new(Notebook)
+	err := c.cc.Invoke(ctx, NotebooksService_GetNotebook_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notebooksServiceClient) UpdateNotebook(ctx context.Context, in *UpdateNotebookRequest, opts ...grpc.CallOption) (*Notebook, error) {
+	out := new(Notebook)
+	err := c.cc.Invoke(ctx, NotebooksService_UpdateNotebook_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notebooksServiceClient) DeleteNotebook(ctx context.Context, in *DeleteNotebookRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, NotebooksService_DeleteNotebook_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotebooksServiceServer is the server API for NotebooksService service.
 // All implementations must embed UnimplementedNotebooksServiceServer
 // for forward compatibility
 type NotebooksServiceServer interface {
+	CreateNotebook(context.Context, *CreateNotebookRequest) (*Notebook, error)
+	ListNotebooks(context.Context, *ListNotebooksRequest) (*Notebooks, error)
+	GetNotebook(context.Context, *GetNotebookRequest) (*Notebook, error)
+	UpdateNotebook(context.Context, *UpdateNotebookRequest) (*Notebook, error)
+	DeleteNotebook(context.Context, *DeleteNotebookRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedNotebooksServiceServer()
 }
 
@@ -42,6 +107,21 @@ type NotebooksServiceServer interface {
 type UnimplementedNotebooksServiceServer struct {
 }
 
+func (UnimplementedNotebooksServiceServer) CreateNotebook(context.Context, *CreateNotebookRequest) (*Notebook, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNotebook not implemented")
+}
+func (UnimplementedNotebooksServiceServer) ListNotebooks(context.Context, *ListNotebooksRequest) (*Notebooks, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListNotebooks not implemented")
+}
+func (UnimplementedNotebooksServiceServer) GetNotebook(context.Context, *GetNotebookRequest) (*Notebook, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNotebook not implemented")
+}
+func (UnimplementedNotebooksServiceServer) UpdateNotebook(context.Context, *UpdateNotebookRequest) (*Notebook, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNotebook not implemented")
+}
+func (UnimplementedNotebooksServiceServer) DeleteNotebook(context.Context, *DeleteNotebookRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNotebook not implemented")
+}
 func (UnimplementedNotebooksServiceServer) mustEmbedUnimplementedNotebooksServiceServer() {}
 
 // UnsafeNotebooksServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -55,13 +135,124 @@ func RegisterNotebooksServiceServer(s grpc.ServiceRegistrar, srv NotebooksServic
 	s.RegisterService(&NotebooksService_ServiceDesc, srv)
 }
 
+func _NotebooksService_CreateNotebook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNotebookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotebooksServiceServer).CreateNotebook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotebooksService_CreateNotebook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotebooksServiceServer).CreateNotebook(ctx, req.(*CreateNotebookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NotebooksService_ListNotebooks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListNotebooksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotebooksServiceServer).ListNotebooks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotebooksService_ListNotebooks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotebooksServiceServer).ListNotebooks(ctx, req.(*ListNotebooksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NotebooksService_GetNotebook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNotebookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotebooksServiceServer).GetNotebook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotebooksService_GetNotebook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotebooksServiceServer).GetNotebook(ctx, req.(*GetNotebookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NotebooksService_UpdateNotebook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateNotebookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotebooksServiceServer).UpdateNotebook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotebooksService_UpdateNotebook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotebooksServiceServer).UpdateNotebook(ctx, req.(*UpdateNotebookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NotebooksService_DeleteNotebook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteNotebookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotebooksServiceServer).DeleteNotebook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotebooksService_DeleteNotebook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotebooksServiceServer).DeleteNotebook(ctx, req.(*DeleteNotebookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NotebooksService_ServiceDesc is the grpc.ServiceDesc for NotebooksService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var NotebooksService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "notebooks.NotebooksService",
+	ServiceName: "notebooks.v1.NotebooksService",
 	HandlerType: (*NotebooksServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "notebooks.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateNotebook",
+			Handler:    _NotebooksService_CreateNotebook_Handler,
+		},
+		{
+			MethodName: "ListNotebooks",
+			Handler:    _NotebooksService_ListNotebooks_Handler,
+		},
+		{
+			MethodName: "GetNotebook",
+			Handler:    _NotebooksService_GetNotebook_Handler,
+		},
+		{
+			MethodName: "UpdateNotebook",
+			Handler:    _NotebooksService_UpdateNotebook_Handler,
+		},
+		{
+			MethodName: "DeleteNotebook",
+			Handler:    _NotebooksService_DeleteNotebook_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "notebooks.proto",
 }

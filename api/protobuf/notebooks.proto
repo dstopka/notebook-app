@@ -1,7 +1,72 @@
 syntax = "proto3";
 
-package notebooks;
+package notebooks.v1;
 
 option go_package = "github.com/dstopka/notebook-app/backend/notebooks";
 
-service NotebooksService {}
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+service NotebooksService {
+    rpc CreateNotebook(CreateNotebookRequest) returns (Notebook) {}
+    rpc ListNotebooks(ListNotebooksRequest) returns (Notebooks) {}
+    rpc GetNotebook(GetNotebookRequest) returns (Notebook) {}
+    rpc UpdateNotebook(UpdateNotebookRequest) returns (Notebook) {}
+    rpc DeleteNotebook(DeleteNotebookRequest) returns (google.protobuf.Empty) {}
+}
+
+message CreateNotebookRequest {
+    Notebook notebook = 1;
+}
+
+message ListNotebooksRequest {
+    string user_id = 1;
+    string filter = 2;
+    string sort = 3;
+}
+
+message GetNotebookRequest {
+    string user_id = 1;
+    string notebook_id = 2;
+}
+
+message UpdateNotebookRequest {
+    Notebook notebook = 1;
+    string user_id = 2;
+    google.protobuf.FieldMask update_mask = 3;
+}
+
+message DeleteNotebookRequest {
+    string user_id = 1;
+    string notebook_id = 2;
+}
+
+message CreateNotebookResponse {
+    string location_url = 1;
+}
+
+message Icon {
+    string emoji = 1;
+}
+
+message Notebook {
+    // Output only.
+    string id = 1;
+    // Immutable.
+    string user_id = 2;
+    // Output only.
+    google.protobuf.Timestamp created_time = 3;
+    // Output only.
+    google.protobuf.Timestamp last_edited_time = 4;
+    // Output only.
+    int64 notes_number = 5;
+    string title = 6;
+    string description = 7;
+    Icon icon = 8;
+
+}
+
+message Notebooks {
+    repeated Notebook notebooks = 1;
+}
