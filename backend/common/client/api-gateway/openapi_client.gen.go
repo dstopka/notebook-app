@@ -95,17 +95,12 @@ type ClientInterface interface {
 	GetPresignedUploadURL(ctx context.Context, body GetPresignedUploadURLJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetNotebooks request
-	GetNotebooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetNotebooks(ctx context.Context, params *GetNotebooksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateNotebook request with any body
 	CreateNotebookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateNotebook(ctx context.Context, body CreateNotebookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// QueryNotebooks request with any body
-	QueryNotebooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	QueryNotebooks(ctx context.Context, body QueryNotebooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNotebook request
 	DeleteNotebook(ctx context.Context, notebookUUID NotebookID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -118,18 +113,16 @@ type ClientInterface interface {
 
 	UpdateNotebook(ctx context.Context, notebookUUID NotebookID, body UpdateNotebookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetNotebookNotes request
+	GetNotebookNotes(ctx context.Context, notebookUUID NotebookID, params *GetNotebookNotesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetNotes request
-	GetNotes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetNotes(ctx context.Context, params *GetNotesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateNote request with any body
 	CreateNoteWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateNote(ctx context.Context, body CreateNoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// QueryNotes request with any body
-	QueryNotesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	QueryNotes(ctx context.Context, body QueryNotesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNote request
 	DeleteNote(ctx context.Context, noteUUID NoteID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -175,8 +168,8 @@ func (c *Client) GetPresignedUploadURL(ctx context.Context, body GetPresignedUpl
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetNotebooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetNotebooksRequest(c.Server)
+func (c *Client) GetNotebooks(ctx context.Context, params *GetNotebooksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNotebooksRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -201,30 +194,6 @@ func (c *Client) CreateNotebookWithBody(ctx context.Context, contentType string,
 
 func (c *Client) CreateNotebook(ctx context.Context, body CreateNotebookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateNotebookRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) QueryNotebooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewQueryNotebooksRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) QueryNotebooks(ctx context.Context, body QueryNotebooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewQueryNotebooksRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -283,8 +252,20 @@ func (c *Client) UpdateNotebook(ctx context.Context, notebookUUID NotebookID, bo
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetNotes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetNotesRequest(c.Server)
+func (c *Client) GetNotebookNotes(ctx context.Context, notebookUUID NotebookID, params *GetNotebookNotesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNotebookNotesRequest(c.Server, notebookUUID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetNotes(ctx context.Context, params *GetNotesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNotesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -309,30 +290,6 @@ func (c *Client) CreateNoteWithBody(ctx context.Context, contentType string, bod
 
 func (c *Client) CreateNote(ctx context.Context, body CreateNoteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateNoteRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) QueryNotesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewQueryNotesRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) QueryNotes(ctx context.Context, body QueryNotesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewQueryNotesRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -468,7 +425,7 @@ func NewGetPresignedUploadURLRequestWithBody(server string, contentType string, 
 }
 
 // NewGetNotebooksRequest generates requests for GetNotebooks
-func NewGetNotebooksRequest(server string) (*http.Request, error) {
+func NewGetNotebooksRequest(server string, params *GetNotebooksParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -485,6 +442,58 @@ func NewGetNotebooksRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if params.Sort != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort", runtime.ParamLocationQuery, *params.Sort); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.PageSize != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pageSize", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Page != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page", runtime.ParamLocationQuery, *params.Page); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -515,46 +524,6 @@ func NewCreateNotebookRequestWithBody(server string, contentType string, body io
 	}
 
 	operationPath := fmt.Sprintf("/notebooks")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewQueryNotebooksRequest calls the generic QueryNotebooks builder with application/json body
-func NewQueryNotebooksRequest(server string, body QueryNotebooksJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewQueryNotebooksRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewQueryNotebooksRequestWithBody generates requests for QueryNotebooks with any type of body
-func NewQueryNotebooksRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/notebooks/query")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -689,8 +658,94 @@ func NewUpdateNotebookRequestWithBody(server string, notebookUUID NotebookID, co
 	return req, nil
 }
 
+// NewGetNotebookNotesRequest generates requests for GetNotebookNotes
+func NewGetNotebookNotesRequest(server string, notebookUUID NotebookID, params *GetNotebookNotesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "notebookUUID", runtime.ParamLocationPath, notebookUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/notebooks/%s/notes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Sort != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort", runtime.ParamLocationQuery, *params.Sort); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.PageSize != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pageSize", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Page != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page", runtime.ParamLocationQuery, *params.Page); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetNotesRequest generates requests for GetNotes
-func NewGetNotesRequest(server string) (*http.Request, error) {
+func NewGetNotesRequest(server string, params *GetNotesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -707,6 +762,58 @@ func NewGetNotesRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if params.Sort != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort", runtime.ParamLocationQuery, *params.Sort); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.PageSize != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "pageSize", runtime.ParamLocationQuery, *params.PageSize); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Page != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "page", runtime.ParamLocationQuery, *params.Page); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -737,46 +844,6 @@ func NewCreateNoteRequestWithBody(server string, contentType string, body io.Rea
 	}
 
 	operationPath := fmt.Sprintf("/notes")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewQueryNotesRequest calls the generic QueryNotes builder with application/json body
-func NewQueryNotesRequest(server string, body QueryNotesJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewQueryNotesRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewQueryNotesRequestWithBody generates requests for QueryNotes with any type of body
-func NewQueryNotesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/notes/query")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1027,17 +1094,12 @@ type ClientWithResponsesInterface interface {
 	GetPresignedUploadURLWithResponse(ctx context.Context, body GetPresignedUploadURLJSONRequestBody, reqEditors ...RequestEditorFn) (*GetPresignedUploadURLResponse, error)
 
 	// GetNotebooks request
-	GetNotebooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNotebooksResponse, error)
+	GetNotebooksWithResponse(ctx context.Context, params *GetNotebooksParams, reqEditors ...RequestEditorFn) (*GetNotebooksResponse, error)
 
 	// CreateNotebook request with any body
 	CreateNotebookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateNotebookResponse, error)
 
 	CreateNotebookWithResponse(ctx context.Context, body CreateNotebookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateNotebookResponse, error)
-
-	// QueryNotebooks request with any body
-	QueryNotebooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QueryNotebooksResponse, error)
-
-	QueryNotebooksWithResponse(ctx context.Context, body QueryNotebooksJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryNotebooksResponse, error)
 
 	// DeleteNotebook request
 	DeleteNotebookWithResponse(ctx context.Context, notebookUUID NotebookID, reqEditors ...RequestEditorFn) (*DeleteNotebookResponse, error)
@@ -1050,18 +1112,16 @@ type ClientWithResponsesInterface interface {
 
 	UpdateNotebookWithResponse(ctx context.Context, notebookUUID NotebookID, body UpdateNotebookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateNotebookResponse, error)
 
+	// GetNotebookNotes request
+	GetNotebookNotesWithResponse(ctx context.Context, notebookUUID NotebookID, params *GetNotebookNotesParams, reqEditors ...RequestEditorFn) (*GetNotebookNotesResponse, error)
+
 	// GetNotes request
-	GetNotesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNotesResponse, error)
+	GetNotesWithResponse(ctx context.Context, params *GetNotesParams, reqEditors ...RequestEditorFn) (*GetNotesResponse, error)
 
 	// CreateNote request with any body
 	CreateNoteWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateNoteResponse, error)
 
 	CreateNoteWithResponse(ctx context.Context, body CreateNoteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateNoteResponse, error)
-
-	// QueryNotes request with any body
-	QueryNotesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QueryNotesResponse, error)
-
-	QueryNotesWithResponse(ctx context.Context, body QueryNotesJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryNotesResponse, error)
 
 	// DeleteNote request
 	DeleteNoteWithResponse(ctx context.Context, noteUUID NoteID, reqEditors ...RequestEditorFn) (*DeleteNoteResponse, error)
@@ -1151,29 +1211,6 @@ func (r CreateNotebookResponse) StatusCode() int {
 	return 0
 }
 
-type QueryNotebooksResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Notebooks
-	JSONDefault  *Error
-}
-
-// Status returns HTTPResponse.Status
-func (r QueryNotebooksResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r QueryNotebooksResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type DeleteNotebookResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1241,6 +1278,29 @@ func (r UpdateNotebookResponse) StatusCode() int {
 	return 0
 }
 
+type GetNotebookNotesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Notes
+	JSONDefault  *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetNotebookNotesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetNotebookNotesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetNotesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1280,29 +1340,6 @@ func (r CreateNoteResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateNoteResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type QueryNotesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Notes
-	JSONDefault  *Error
-}
-
-// Status returns HTTPResponse.Status
-func (r QueryNotesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r QueryNotesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1438,8 +1475,8 @@ func (c *ClientWithResponses) GetPresignedUploadURLWithResponse(ctx context.Cont
 }
 
 // GetNotebooksWithResponse request returning *GetNotebooksResponse
-func (c *ClientWithResponses) GetNotebooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNotebooksResponse, error) {
-	rsp, err := c.GetNotebooks(ctx, reqEditors...)
+func (c *ClientWithResponses) GetNotebooksWithResponse(ctx context.Context, params *GetNotebooksParams, reqEditors ...RequestEditorFn) (*GetNotebooksResponse, error) {
+	rsp, err := c.GetNotebooks(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -1461,23 +1498,6 @@ func (c *ClientWithResponses) CreateNotebookWithResponse(ctx context.Context, bo
 		return nil, err
 	}
 	return ParseCreateNotebookResponse(rsp)
-}
-
-// QueryNotebooksWithBodyWithResponse request with arbitrary body returning *QueryNotebooksResponse
-func (c *ClientWithResponses) QueryNotebooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QueryNotebooksResponse, error) {
-	rsp, err := c.QueryNotebooksWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseQueryNotebooksResponse(rsp)
-}
-
-func (c *ClientWithResponses) QueryNotebooksWithResponse(ctx context.Context, body QueryNotebooksJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryNotebooksResponse, error) {
-	rsp, err := c.QueryNotebooks(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseQueryNotebooksResponse(rsp)
 }
 
 // DeleteNotebookWithResponse request returning *DeleteNotebookResponse
@@ -1515,9 +1535,18 @@ func (c *ClientWithResponses) UpdateNotebookWithResponse(ctx context.Context, no
 	return ParseUpdateNotebookResponse(rsp)
 }
 
+// GetNotebookNotesWithResponse request returning *GetNotebookNotesResponse
+func (c *ClientWithResponses) GetNotebookNotesWithResponse(ctx context.Context, notebookUUID NotebookID, params *GetNotebookNotesParams, reqEditors ...RequestEditorFn) (*GetNotebookNotesResponse, error) {
+	rsp, err := c.GetNotebookNotes(ctx, notebookUUID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetNotebookNotesResponse(rsp)
+}
+
 // GetNotesWithResponse request returning *GetNotesResponse
-func (c *ClientWithResponses) GetNotesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNotesResponse, error) {
-	rsp, err := c.GetNotes(ctx, reqEditors...)
+func (c *ClientWithResponses) GetNotesWithResponse(ctx context.Context, params *GetNotesParams, reqEditors ...RequestEditorFn) (*GetNotesResponse, error) {
+	rsp, err := c.GetNotes(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -1539,23 +1568,6 @@ func (c *ClientWithResponses) CreateNoteWithResponse(ctx context.Context, body C
 		return nil, err
 	}
 	return ParseCreateNoteResponse(rsp)
-}
-
-// QueryNotesWithBodyWithResponse request with arbitrary body returning *QueryNotesResponse
-func (c *ClientWithResponses) QueryNotesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QueryNotesResponse, error) {
-	rsp, err := c.QueryNotesWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseQueryNotesResponse(rsp)
-}
-
-func (c *ClientWithResponses) QueryNotesWithResponse(ctx context.Context, body QueryNotesJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryNotesResponse, error) {
-	rsp, err := c.QueryNotes(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseQueryNotesResponse(rsp)
 }
 
 // DeleteNoteWithResponse request returning *DeleteNoteResponse
@@ -1711,39 +1723,6 @@ func ParseCreateNotebookResponse(rsp *http.Response) (*CreateNotebookResponse, e
 	return response, nil
 }
 
-// ParseQueryNotebooksResponse parses an HTTP response from a QueryNotebooksWithResponse call
-func ParseQueryNotebooksResponse(rsp *http.Response) (*QueryNotebooksResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &QueryNotebooksResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Notebooks
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
-		var dest Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSONDefault = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseDeleteNotebookResponse parses an HTTP response from a DeleteNotebookWithResponse call
 func ParseDeleteNotebookResponse(rsp *http.Response) (*DeleteNotebookResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -1829,6 +1808,39 @@ func ParseUpdateNotebookResponse(rsp *http.Response) (*UpdateNotebookResponse, e
 	return response, nil
 }
 
+// ParseGetNotebookNotesResponse parses an HTTP response from a GetNotebookNotesWithResponse call
+func ParseGetNotebookNotesResponse(rsp *http.Response) (*GetNotebookNotesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetNotebookNotesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Notes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetNotesResponse parses an HTTP response from a GetNotesWithResponse call
 func ParseGetNotesResponse(rsp *http.Response) (*GetNotesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -1876,39 +1888,6 @@ func ParseCreateNoteResponse(rsp *http.Response) (*CreateNoteResponse, error) {
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
-		var dest Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSONDefault = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseQueryNotesResponse parses an HTTP response from a QueryNotesWithResponse call
-func ParseQueryNotesResponse(rsp *http.Response) (*QueryNotesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &QueryNotesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Notes
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

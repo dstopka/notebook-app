@@ -1,0 +1,4 @@
+package: infrastructure
+generate:
+  models: true
+output: ./internal/infrastructure/openapi_types.gen.go

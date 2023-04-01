@@ -4,46 +4,14 @@
 package infrastructure
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 )
 
 const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
-
-// Defines values for CompoundFilterOperator.
-const (
-	And CompoundFilterOperator = "and"
-	Or  CompoundFilterOperator = "or"
-)
-
-// Defines values for SortDirection.
-const (
-	Ascending  SortDirection = "ascending"
-	Descending SortDirection = "descending"
-)
-
-// CompoundFilter defines model for CompoundFilter.
-type CompoundFilter struct {
-	Filters  []FilterItem           `json:"filters"`
-	Operator CompoundFilterOperator `json:"operator"`
-	Type     string                 `json:"type"`
-}
-
-// CompoundFilterOperator defines model for CompoundFilter.Operator.
-type CompoundFilterOperator string
-
-// Contains defines model for Contains.
-type Contains struct {
-	Contains  string `json:"contains"`
-	Operation string `json:"operation"`
-}
 
 // Emoji defines model for Emoji.
 type Emoji struct {
@@ -62,18 +30,6 @@ type Error struct {
 	Status int `json:"status"`
 }
 
-// Filter represents a single filter or a compound filter
-type Filter struct {
-	union json.RawMessage
-}
-
-// FilterItem defines model for FilterItem.
-type FilterItem struct {
-	Property string `json:"property"`
-	Type     string `json:"type"`
-	union    json.RawMessage
-}
-
 // GetPresignedUploadURL defines model for GetPresignedUploadURL.
 type GetPresignedUploadURL struct {
 	ContentLength int    `json:"contentLength"`
@@ -83,18 +39,6 @@ type GetPresignedUploadURL struct {
 
 // Icon defines model for Icon.
 type Icon = Emoji
-
-// IsEmpty defines model for IsEmpty.
-type IsEmpty struct {
-	IsEmpty   bool   `json:"isEmpty"`
-	Operation string `json:"operation"`
-}
-
-// IsNotEmpty defines model for IsNotEmpty.
-type IsNotEmpty struct {
-	IsNotEmpty bool   `json:"isNotEmpty"`
-	Operation  string `json:"operation"`
-}
 
 // Note defines model for Note.
 type Note struct {
@@ -148,16 +92,10 @@ type Notebooks struct {
 	Notebooks []Notebook `json:"notebooks"`
 }
 
-// NotebooksQuery represents object containing filters and sorts
-type NotebooksQuery = Query
-
 // Notes represents a list of notes
 type Notes struct {
 	Notes []Note `json:"notes"`
 }
-
-// NotesQuery represents object containing filters and sorts
-type NotesQuery = Query
 
 // PatchNote defines model for PatchNote.
 type PatchNote = NoteBase
@@ -185,32 +123,6 @@ type PresignedUploadURL struct {
 	SignedPutURL string `json:"signedPutURL"`
 }
 
-// Query represents object containing filters and sorts
-type Query struct {
-	// Filter represents a single filter or a compound filter
-	Filter *Filter `json:"filter,omitempty"`
-	Sorts  []Sort  `json:"sorts"`
-}
-
-// Sort defines model for Sort.
-type Sort struct {
-	Direction SortDirection `json:"direction"`
-	Property  string        `json:"property"`
-}
-
-// SortDirection defines model for Sort.Direction.
-type SortDirection string
-
-// TextFilter defines model for TextFilter.
-type TextFilter struct {
-	Text *TextFilter_Text `json:"text,omitempty"`
-}
-
-// TextFilter_Text defines model for TextFilter.Text.
-type TextFilter_Text struct {
-	union json.RawMessage
-}
-
 // User defines model for User.
 type User struct {
 	AvatarURL string `json:"avatarURL"`
@@ -229,14 +141,56 @@ type NoteID = openapi_types.UUID
 // NotebookID defines model for NotebookID.
 type NotebookID = openapi_types.UUID
 
+// Page defines model for Page.
+type Page = int
+
+// PageSize defines model for PageSize.
+type PageSize = int
+
+// Sort defines model for Sort.
+type Sort = string
+
+// GetNotebooksParams defines parameters for GetNotebooks.
+type GetNotebooksParams struct {
+	// Sort represents a sort query parameter
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// PageSize represents a page size query parameter
+	PageSize *PageSize `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Page represents an page number query parameter
+	Page *Page `form:"page,omitempty" json:"page,omitempty"`
+}
+
+// GetNotebookNotesParams defines parameters for GetNotebookNotes.
+type GetNotebookNotesParams struct {
+	// Sort represents a sort query parameter
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// PageSize represents a page size query parameter
+	PageSize *PageSize `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Page represents an page number query parameter
+	Page *Page `form:"page,omitempty" json:"page,omitempty"`
+}
+
+// GetNotesParams defines parameters for GetNotes.
+type GetNotesParams struct {
+	// Sort represents a sort query parameter
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// PageSize represents a page size query parameter
+	PageSize *PageSize `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Page represents an page number query parameter
+	Page *Page `form:"page,omitempty" json:"page,omitempty"`
+}
+
 // GetPresignedUploadURLJSONRequestBody defines body for GetPresignedUploadURL for application/json ContentType.
 type GetPresignedUploadURLJSONRequestBody = GetPresignedUploadURL
 
 // CreateNotebookJSONRequestBody defines body for CreateNotebook for application/json ContentType.
 type CreateNotebookJSONRequestBody = PostNotebook
-
-// QueryNotebooksJSONRequestBody defines body for QueryNotebooks for application/json ContentType.
-type QueryNotebooksJSONRequestBody = NotebooksQuery
 
 // UpdateNotebookJSONRequestBody defines body for UpdateNotebook for application/json ContentType.
 type UpdateNotebookJSONRequestBody = PatchNotebook
@@ -244,300 +198,8 @@ type UpdateNotebookJSONRequestBody = PatchNotebook
 // CreateNoteJSONRequestBody defines body for CreateNote for application/json ContentType.
 type CreateNoteJSONRequestBody = PostNote
 
-// QueryNotesJSONRequestBody defines body for QueryNotes for application/json ContentType.
-type QueryNotesJSONRequestBody = NotesQuery
-
 // UpdateNoteJSONRequestBody defines body for UpdateNote for application/json ContentType.
 type UpdateNoteJSONRequestBody = PatchNote
 
 // UpdateCurrentUserJSONRequestBody defines body for UpdateCurrentUser for application/json ContentType.
 type UpdateCurrentUserJSONRequestBody = PatchUser
-
-// AsFilterItem returns the union data inside the Filter as a FilterItem
-func (t Filter) AsFilterItem() (FilterItem, error) {
-	var body FilterItem
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromFilterItem overwrites any union data inside the Filter as the provided FilterItem
-func (t *Filter) FromFilterItem(v FilterItem) error {
-	v.Type = "simpleFilter"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeFilterItem performs a merge with any union data inside the Filter, using the provided FilterItem
-func (t *Filter) MergeFilterItem(v FilterItem) error {
-	v.Type = "simpleFilter"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-// AsCompoundFilter returns the union data inside the Filter as a CompoundFilter
-func (t Filter) AsCompoundFilter() (CompoundFilter, error) {
-	var body CompoundFilter
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromCompoundFilter overwrites any union data inside the Filter as the provided CompoundFilter
-func (t *Filter) FromCompoundFilter(v CompoundFilter) error {
-	v.Type = "compoundFilter"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeCompoundFilter performs a merge with any union data inside the Filter, using the provided CompoundFilter
-func (t *Filter) MergeCompoundFilter(v CompoundFilter) error {
-	v.Type = "compoundFilter"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-func (t Filter) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"type"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t Filter) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "compoundFilter":
-		return t.AsCompoundFilter()
-	case "simpleFilter":
-		return t.AsFilterItem()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
-}
-
-func (t Filter) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Filter) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsTextFilter returns the union data inside the FilterItem as a TextFilter
-func (t FilterItem) AsTextFilter() (TextFilter, error) {
-	var body TextFilter
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromTextFilter overwrites any union data inside the FilterItem as the provided TextFilter
-func (t *FilterItem) FromTextFilter(v TextFilter) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeTextFilter performs a merge with any union data inside the FilterItem, using the provided TextFilter
-func (t *FilterItem) MergeTextFilter(v TextFilter) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-func (t FilterItem) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	object := make(map[string]json.RawMessage)
-	if t.union != nil {
-		err = json.Unmarshal(b, &object)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	object["property"], err = json.Marshal(t.Property)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'property': %w", err)
-	}
-
-	object["type"], err = json.Marshal(t.Type)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'type': %w", err)
-	}
-
-	b, err = json.Marshal(object)
-	return b, err
-}
-
-func (t *FilterItem) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	if err != nil {
-		return err
-	}
-	object := make(map[string]json.RawMessage)
-	err = json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if raw, found := object["property"]; found {
-		err = json.Unmarshal(raw, &t.Property)
-		if err != nil {
-			return fmt.Errorf("error reading 'property': %w", err)
-		}
-	}
-
-	if raw, found := object["type"]; found {
-		err = json.Unmarshal(raw, &t.Type)
-		if err != nil {
-			return fmt.Errorf("error reading 'type': %w", err)
-		}
-	}
-
-	return err
-}
-
-// AsIsEmpty returns the union data inside the TextFilter_Text as a IsEmpty
-func (t TextFilter_Text) AsIsEmpty() (IsEmpty, error) {
-	var body IsEmpty
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromIsEmpty overwrites any union data inside the TextFilter_Text as the provided IsEmpty
-func (t *TextFilter_Text) FromIsEmpty(v IsEmpty) error {
-	v.Operation = "isEmpty"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeIsEmpty performs a merge with any union data inside the TextFilter_Text, using the provided IsEmpty
-func (t *TextFilter_Text) MergeIsEmpty(v IsEmpty) error {
-	v.Operation = "isEmpty"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-// AsIsNotEmpty returns the union data inside the TextFilter_Text as a IsNotEmpty
-func (t TextFilter_Text) AsIsNotEmpty() (IsNotEmpty, error) {
-	var body IsNotEmpty
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromIsNotEmpty overwrites any union data inside the TextFilter_Text as the provided IsNotEmpty
-func (t *TextFilter_Text) FromIsNotEmpty(v IsNotEmpty) error {
-	v.Operation = "isNotEmpty"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeIsNotEmpty performs a merge with any union data inside the TextFilter_Text, using the provided IsNotEmpty
-func (t *TextFilter_Text) MergeIsNotEmpty(v IsNotEmpty) error {
-	v.Operation = "isNotEmpty"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-// AsContains returns the union data inside the TextFilter_Text as a Contains
-func (t TextFilter_Text) AsContains() (Contains, error) {
-	var body Contains
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromContains overwrites any union data inside the TextFilter_Text as the provided Contains
-func (t *TextFilter_Text) FromContains(v Contains) error {
-	v.Operation = "contains"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeContains performs a merge with any union data inside the TextFilter_Text, using the provided Contains
-func (t *TextFilter_Text) MergeContains(v Contains) error {
-	v.Operation = "contains"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(b, t.union)
-	t.union = merged
-	return err
-}
-
-func (t TextFilter_Text) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"operation"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t TextFilter_Text) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "contains":
-		return t.AsContains()
-	case "isEmpty":
-		return t.AsIsEmpty()
-	case "isNotEmpty":
-		return t.AsIsNotEmpty()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
-}
-
-func (t TextFilter_Text) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *TextFilter_Text) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}

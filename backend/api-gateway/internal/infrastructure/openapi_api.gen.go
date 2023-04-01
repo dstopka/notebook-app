@@ -19,13 +19,10 @@ type ServerInterface interface {
 	GetPresignedUploadURL(w http.ResponseWriter, r *http.Request)
 
 	// (GET /notebooks)
-	GetNotebooks(w http.ResponseWriter, r *http.Request)
+	GetNotebooks(w http.ResponseWriter, r *http.Request, params GetNotebooksParams)
 
 	// (POST /notebooks)
 	CreateNotebook(w http.ResponseWriter, r *http.Request)
-
-	// (POST /notebooks/query)
-	QueryNotebooks(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /notebooks/{notebookUUID})
 	DeleteNotebook(w http.ResponseWriter, r *http.Request, notebookUUID NotebookID)
@@ -36,14 +33,14 @@ type ServerInterface interface {
 	// (PATCH /notebooks/{notebookUUID})
 	UpdateNotebook(w http.ResponseWriter, r *http.Request, notebookUUID NotebookID)
 
+	// (GET /notebooks/{notebookUUID}/notes)
+	GetNotebookNotes(w http.ResponseWriter, r *http.Request, notebookUUID NotebookID, params GetNotebookNotesParams)
+
 	// (GET /notes)
-	GetNotes(w http.ResponseWriter, r *http.Request)
+	GetNotes(w http.ResponseWriter, r *http.Request, params GetNotesParams)
 
 	// (POST /notes)
 	CreateNote(w http.ResponseWriter, r *http.Request)
-
-	// (POST /notes/query)
-	QueryNotes(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /notes/{noteUUID})
 	DeleteNote(w http.ResponseWriter, r *http.Request, noteUUID NoteID)
@@ -91,10 +88,39 @@ func (siw *ServerInterfaceWrapper) GetPresignedUploadURL(w http.ResponseWriter, 
 func (siw *ServerInterfaceWrapper) GetNotebooks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetNotebooksParams
+
+	// ------------- Optional query parameter "sort" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "sort", r.URL.Query(), &params.Sort)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "sort", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "pageSize" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "pageSize", r.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pageSize", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", r.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page", Err: err})
+		return
+	}
+
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetNotebooks(w, r)
+		siw.Handler.GetNotebooks(w, r, params)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -112,23 +138,6 @@ func (siw *ServerInterfaceWrapper) CreateNotebook(w http.ResponseWriter, r *http
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateNotebook(w, r)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// QueryNotebooks operation middleware
-func (siw *ServerInterfaceWrapper) QueryNotebooks(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.QueryNotebooks(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -222,14 +231,98 @@ func (siw *ServerInterfaceWrapper) UpdateNotebook(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// GetNotebookNotes operation middleware
+func (siw *ServerInterfaceWrapper) GetNotebookNotes(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "notebookUUID" -------------
+	var notebookUUID NotebookID
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "notebookUUID", runtime.ParamLocationPath, chi.URLParam(r, "notebookUUID"), &notebookUUID)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "notebookUUID", Err: err})
+		return
+	}
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetNotebookNotesParams
+
+	// ------------- Optional query parameter "sort" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "sort", r.URL.Query(), &params.Sort)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "sort", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "pageSize" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "pageSize", r.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pageSize", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", r.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page", Err: err})
+		return
+	}
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetNotebookNotes(w, r, notebookUUID, params)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // GetNotes operation middleware
 func (siw *ServerInterfaceWrapper) GetNotes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetNotesParams
+
+	// ------------- Optional query parameter "sort" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "sort", r.URL.Query(), &params.Sort)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "sort", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "pageSize" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "pageSize", r.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pageSize", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", r.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page", Err: err})
+		return
+	}
+
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetNotes(w, r)
+		siw.Handler.GetNotes(w, r, params)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -247,23 +340,6 @@ func (siw *ServerInterfaceWrapper) CreateNote(w http.ResponseWriter, r *http.Req
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateNote(w, r)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// QueryNotes operation middleware
-func (siw *ServerInterfaceWrapper) QueryNotes(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.QueryNotes(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -514,9 +590,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/notebooks", wrapper.CreateNotebook)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/notebooks/query", wrapper.QueryNotebooks)
-	})
-	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/notebooks/{notebookUUID}", wrapper.DeleteNotebook)
 	})
 	r.Group(func(r chi.Router) {
@@ -526,13 +599,13 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Patch(options.BaseURL+"/notebooks/{notebookUUID}", wrapper.UpdateNotebook)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/notebooks/{notebookUUID}/notes", wrapper.GetNotebookNotes)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/notes", wrapper.GetNotes)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/notes", wrapper.CreateNote)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/notes/query", wrapper.QueryNotes)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/notes/{noteUUID}", wrapper.DeleteNote)
