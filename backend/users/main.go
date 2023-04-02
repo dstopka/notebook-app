@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dstopka/notebook-app/backend/common/genproto/users"
 	"github.com/dstopka/notebook-app/backend/common/server"
 	"github.com/dstopka/notebook-app/backend/users/internal/config"
 	"github.com/dstopka/notebook-app/backend/users/internal/infrastructure"
 	"github.com/dstopka/notebook-app/backend/users/internal/service"
+	"github.com/dstopka/notebook-app/backend/users/pkg/users"
 	"google.golang.org/grpc"
 )
 

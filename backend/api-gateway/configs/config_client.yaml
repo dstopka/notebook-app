@@ -1,0 +1,5 @@
+package: gateway
+generate:
+  client: true
+  models: true
+output: ./pkg/client/openapi_client.gen.go

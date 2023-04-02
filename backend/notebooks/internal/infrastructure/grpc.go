@@ -3,8 +3,8 @@ package infrastructure
 import (
 	"context"
 
-	"github.com/dstopka/notebook-app/backend/common/genproto/notebooks"
 	"github.com/dstopka/notebook-app/backend/notebooks/internal/app"
+	"github.com/dstopka/notebook-app/backend/notebooks/pkg/notebooks"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
