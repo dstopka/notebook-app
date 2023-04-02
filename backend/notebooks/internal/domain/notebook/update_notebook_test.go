@@ -46,7 +46,7 @@ func TestChangeDescription(t *testing.T) {
 		preUpdateTime := ntbk.LastEditedTime()
 		err := ntbk.ChangeDescription(newDesc)
 		require.NoError(t, err)
-	
+
 		assert.Equal(t, newDesc, ntbk.Description())
 		assert.True(t, preUpdateTime.Before(ntbk.LastEditedTime()))
 	})

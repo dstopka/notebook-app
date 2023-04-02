@@ -11,9 +11,9 @@ import (
 func TestHasNotes(t *testing.T) {
 	t.Parallel()
 
-	testCases := map[string]struct{
+	testCases := map[string]struct {
 		crateNotebook func(t *testing.T) *notebook.Notebook
-		expected bool
+		expected      bool
 	}{
 		"with notes": {
 			crateNotebook: func(t *testing.T) *notebook.Notebook {
@@ -25,7 +25,7 @@ func TestHasNotes(t *testing.T) {
 		},
 		"empty notebook": {
 			crateNotebook: newExampleNotebook,
-			expected: false,
+			expected:      false,
 		},
 	}
 

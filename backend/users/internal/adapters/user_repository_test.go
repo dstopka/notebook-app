@@ -63,7 +63,7 @@ func testGetUser(t *testing.T, repo app.UserRepository) {
 	}{
 		"existing_user": {
 			expectedUser: newSimpleUser(),
-			insertUser: true,
+			insertUser:   true,
 		},
 		"not_existing_user": {
 			expectedUser: &app.User{},
@@ -120,7 +120,7 @@ func testUpdateUser(t *testing.T, repo app.UserRepository) {
 			getUser: func() *app.User {
 				user := newSimpleUser()
 				user.LastIP = "127.0.0.1"
-				
+
 				return user
 			},
 		},
@@ -171,9 +171,9 @@ func testUpdateUser_existing(t *testing.T, repo app.UserRepository) {
 
 func newSimpleUser() *app.User {
 	return &app.User{
-		UUID:   uuid.NewString(),
-		Name:   "John Doe",
-		Role:   "user",
+		UUID: uuid.NewString(),
+		Name: "John Doe",
+		Role: "user",
 	}
 }
 
