@@ -1,0 +1,9 @@
+BASE_DIR=$(shell git rev-parse --show-toplevel)
+
+.PHONY: fmt
+fmt:
+	@gofmt -s -w .
+
+.PHONY: test
+test:
+	@go test -v ./...
